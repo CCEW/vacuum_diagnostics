@@ -14,5 +14,6 @@ This project demonstrates a low-cost data-driven method to analyze vacuum system
 python -m src.main
 ```
 Outputs:
-- Processed data → `data/processed/processed.csv`
+- Merged raw data → `data/processed/merged_all_raw_data.csv`
+- Processed data → `data/processed/processed_all.csv`
 - Plots → `outputs/plots/`

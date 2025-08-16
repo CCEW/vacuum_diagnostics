@@ -12,7 +12,7 @@ def load_all_csv() -> pd.DataFrame:
         dfs.append(df)
     if not dfs:
         return pd.DataFrame()
-    save_path = DATA_PROCESSED / "all_data.csv"
+    save_path = DATA_PROCESSED / "merged_all_raw_data.csv"
     combined_df = pd.concat(dfs, ignore_index=True)
     combined_df.to_csv(save_path, index=False)
     print(f"Combined data saved to {save_path}")
