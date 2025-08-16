@@ -1,0 +1,3 @@
+date,time,ion_analog,voltage_ion,pressure_ion,conv_analog,voltage_conv,pressure_conv,tags
+2025-07-14,15:16:23,437,2.16E+00,2.08E-07,194,9.59E-01,1.03E-03,"IG on, CG on"
+2025-07-14,15:16:24,437,2.16E+00,2.08E-07,193,9.54E-01,1.01E-03,"IG on, CG on"
