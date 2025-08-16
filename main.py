@@ -11,24 +11,21 @@ def main():
     df = preprocess(df)
     df = tag_events(df)
     df = detect_anomalies(df)
-    df.to_csv(DATA_PROCESSED / "processed.csv", index=False)
-
-    tag_freqs = tag_frequencies(df)
-    combo_counts_df = combo_counts(df)
-    tag_freqs.to_csv(DATA_PROCESSED / "tag_frequencies.csv", index=False)
-    combo_counts_df.to_csv(DATA_PROCESSED / "tag_combinations.csv", index=False)
-    print("Saved tag stats.")
-
-    plot_time_with_state_bands(df, savepath=OUTPUT_PLOTS / "time_series_state_bands.png")
-    plot_time_with_events(df, savepath=OUTPUT_PLOTS / "time_series_events.png")
-    scatter_ion_vs_conv_by_state(df, savepath=OUTPUT_PLOTS / "scatter_by_state.png")
-    plot_time_with_tag_markers(df, savepath=OUTPUT_PLOTS / "time_series_tags.png")
+    processed_path = DATA_PROCESSED / "processed.csv"
+    df.to_csv(processed_path, index=False)
+    print(f"Saved: {processed_path}")
 
     # High-level plots
     plot_time_with_state_bands(df, title="Pressures with IG_state bands", savepath=OUTPUT_PLOTS  / "state_bands.png")
     plot_time_with_tag_markers(df, title="Tag markers over time", savepath=OUTPUT_PLOTS / "tag_markers.png")
     plot_anomalies(df, title="Anomaly overlay (IsolationForest)", savepath=OUTPUT_PLOTS / "anomalies_if.png")
 
+    #Tag stats
+    tag_freqs = tag_frequencies(df)
+    combo_counts_df = combo_counts(df)
+    tag_freqs.to_csv(DATA_PROCESSED / "tag_frequencies.csv", index=False)
+    combo_counts_df.to_csv(DATA_PROCESSED / "tag_combinations.csv", index=False)
+    print("Saved tag stats.")
 
 if __name__ == "__main__":
     main()
