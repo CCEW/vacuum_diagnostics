@@ -15,27 +15,13 @@ CG_TAGS = ["CG on", "CG off", "CG turn off", "CG turn on"]
 CH_TAGS = ["gate manipulation", "RP on", "chamber open", "venting"]
 OP_tags = ["tag_gate_manipulation", "tag_RP_on", "tag_chamber_open", "tag_venting"]
 
-# === Feature settings ===
-ROLL_WINDOWS = [3, 7]  # in samples (adapt to your sampling cadence)
+ROLL_WINDOWS = [3, 5]  # in samples (adapt to your sampling cadence)
 SLOPE_WINDOW = 5       # samples for rolling slope (linear trend)
 
-# === ML settings ===
-# Isolation Forest parameters:
-# - IF_RANDOM_STATE: For reproducibility. Usually keep fixed.
-# - IF_CONTAMINATION: Expected fraction of anomalies. Tune based on domain knowledge or by inspecting results.
-#   Start with a small value (e.g., 0.01), then adjust up/down depending on how many anomalies you expect.
-#   You can use visual inspection or cross-validation with labeled data (if available) to guide this.
 IF_RANDOM_STATE = 42
 IF_CONTAMINATION = 0.01  # expected fraction of anomalies
 
-# To tune these parameters:
-# 1. Start with default values.
-# 2. Run the model and inspect detected anomalies.
-# 3. If too many/too few anomalies are detected, adjust IF_CONTAMINATION.
-# 4. If you have labeled data, use grid search or cross-validation to optimize.
-# 5. For rolling windows, try different values and see which best captures the trends/disturbances in your data.
 
-# Features used by the anomaly model (must exist after feature engineering)
 FEATURE_COLUMNS = [
     "pressure_ion", "pressure_conv",
     "delta_ion", "delta_conv",
