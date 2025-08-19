@@ -1,7 +1,7 @@
 # src/tags.py
 import pandas as pd
 from collections import Counter
-from .config import IG_TAGS, CG_TAGS
+from .config import IG_TAGS, CG_TAGS, CH_TAGS
 from sklearn.preprocessing import MultiLabelBinarizer
 
 # Parse tags into list
@@ -14,7 +14,7 @@ def parse_tags(df: pd.DataFrame) -> pd.DataFrame:
 
 #  Add binary columns for using MultiLabelBinarizer from sklearn
 def add_tag_binaries(df: pd.DataFrame) -> pd.DataFrame:
-    mlb = MultiLabelBinarizer(classes=IG_TAGS + CG_TAGS)
+    mlb = MultiLabelBinarizer(classes=IG_TAGS + CG_TAGS + CH_TAGS)
     binary_matrix = mlb.fit_transform(df["tag_list"])
     
     # Build DataFrame with proper column names
@@ -26,12 +26,10 @@ def add_tag_binaries(df: pd.DataFrame) -> pd.DataFrame:
     return pd.concat([df, binary_df], axis=1)
 
 
-# Derive IG_state & CG_state
+# Derive IG_state, CG_state & CH_state from tags
 def derive_states(df: pd.DataFrame) -> pd.DataFrame:
-    IG_PRIORITY = ["IG fail", "IG off", "IG slow on", "IG turn on", "IG on"]
-    CG_TAGS = ["CG on", "CG off", "CG turn off", "CG turn on"]
     def ig_state(L):
-        for tag in IG_PRIORITY:
+        for tag in IG_TAGS:
             if tag in L:
                 return tag
         return "IG unknown"
@@ -41,9 +39,16 @@ def derive_states(df: pd.DataFrame) -> pd.DataFrame:
             if tag in L:
                 return tag
         return "CG unknown"
+    
+    def ch_state(L):
+        for tag in CH_TAGS:
+            if tag in L:
+                return tag
+        return "CH normal"
 
     df["IG_state"] = df["tag_list"].apply(ig_state)
     df["CG_state"] = df["tag_list"].apply(cg_state)
+    df["CH_state"] = df["tag_list"].apply(ch_state)
     return df
 
 

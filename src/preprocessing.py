@@ -5,19 +5,23 @@ from sklearn.preprocessing import StandardScaler
 from .config import NUMERIC_COLS, ROLL_WINDOWS, SLOPE_WINDOW
 
 def drop_nonessential_cols(df: pd.DataFrame) -> pd.DataFrame:
+    df = df.copy()
+    if "ion_analog" not in df.columns or "conv_analog" not in df.columns:
+        return df
     cols_to_drop = ["conv_analog", "ion_analog"]
     df.drop(columns=cols_to_drop, inplace=True, errors="ignore")
     return df
 
 # Build datetime column from date and time columns
 def build_datetime(df: pd.DataFrame) -> pd.DataFrame:
+    df = df.copy()
+    if "datetime" in df.columns:
+        return df
     df["datetime"] = pd.to_datetime(
-        df["date"].astype(str) + " " + df["time"].astype(str),
-        errors="coerce"
+        df["date"].astype(str) + " " + df["time"].astype(str)
     )
     df.drop(columns=["date", "time"], inplace=True, errors="ignore")
-    df.set_index("datetime", inplace=True)
-    
+    df = df[["datetime"]].join(df.drop(columns=["datetime"]))
     return df
 
 def basic_clean(df: pd.DataFrame) -> pd.DataFrame:

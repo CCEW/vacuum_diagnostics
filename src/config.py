@@ -10,8 +10,9 @@ NUMERIC_COLS = [
     "conv_analog","voltage_conv","pressure_conv",
 ]
 
-IG_TAGS = ["IG on","IG off","IG fail","IG turn on","IG slow on"]
+IG_TAGS = ["IG on","IG off","IG fail","IG turn on","IG turn off", "IG slow on"]
 CG_TAGS = ["CG on", "CG off", "CG turn off", "CG turn on"]
+CH_TAGS = ["gate manipulation", "RP on", "chamber open", "venting"]
 
 # === Feature settings ===
 ROLL_WINDOWS = [5, 15]  # in samples (adapt to your sampling cadence)

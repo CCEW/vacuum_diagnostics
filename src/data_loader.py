@@ -8,7 +8,6 @@ def load_all_csv() -> pd.DataFrame:
     dfs = []
     for f in files:
         df = pd.read_csv(f)
-        df["source_file"] = f.name
         dfs.append(df)
     if not dfs:
         return pd.DataFrame()
