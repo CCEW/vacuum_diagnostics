@@ -13,50 +13,75 @@ def _format_time_axis(ax):
     ax.xaxis.set_major_formatter(formatter)
 
 def plot_time_with_events(df: pd.DataFrame, savepath: Path | None = None):
-    plt.figure(figsize=(15,5))
-    plt.plot(df['datetime'], df['pressure_ion'], label='pressure_ion')
-    plt.plot(df['datetime'], df['pressure_conv'], label='pressure_conv')
-    plt.title('Pressure Ion and Convectron Pressure Over Time')
-    plt.yscale("log")
-    plt.xlabel('Datetime')
-    _format_time_axis(plt.gca())
-    plt.xticks(rotation=45)
-    plt.ylabel('Pressure')
-    plt.legend()
+    fig, ax = plt.subplots(figsize=(12, 5))
+    ax.plot(df["datetime"], df["pressure_conv"], label="Convectron", lw=2)
+    ax.plot(df["datetime"], df["pressure_ion"], label="Ion", lw=2, alpha=0.9)
+    ax.set_yscale("log")
+    ax.set_ylabel("Pressure (Torr, log)")
+    ax.set_title("Ion and Convectron Pressure Over Time")
+    _format_time_axis(ax)
+    ax.set_xlabel("Datetime")
+    # legend over graph
+    ax.legend(loc="upper left")
+    
+    plt.grid(True, which='both', linestyle='--', linewidth=0.5)
     if savepath:
         savepath.parent.mkdir(parents=True, exist_ok=True)
         plt.savefig(savepath, dpi=150, bbox_inches="tight")
-    
     plt.show()
     plt.close()
 
 
-def plot_time_with_unplugged_events(df: pd.DataFrame, savepath: Path | None = None):
+def plot_time_with_unplugged_events(df: pd.DataFrame, savepath: Path | None = None): 
     fig, ax = plt.subplots(figsize=(12, 6))
-    ax.plot(df["datetime"], df["pressure_ion"], label="Pressure Ion", color="blue")
-    ax.plot(df["datetime"], df["pressure_conv"], label="Pressure Convectron", color="orange")
+    ax.plot(df["datetime"], df["pressure_conv"], label="Convectron")
+    ax.plot(df["datetime"], df["pressure_ion"], label="Ion")
+
+    # IC markers
     
-    # Mark IC unplugged events
+    '''ic_turn_off = df[df["IG_state"] == "IG turn off"]
+    ax.scatter(ic_turn_off["datetime"], 
+               ic_turn_off["pressure_ion"],
+               label="IC Turn Off", marker="x", color="red", s=60, zorder=5)'''
     ic_unplugged = df[df["IC_unplugged"]]
-    ax.scatter(ic_unplugged["datetime"], ic_unplugged["pressure_ion"], label="IC Unplugged", marker='x', color='red', s=50)
+    ax.scatter(ic_unplugged["datetime"], 
+               [1e-7] * len(ic_unplugged),
+               label="IC Unplugged", marker="o", color="yellow", s=60, zorder=5)
+    ic_off = df[df["IG_state"] == "IG off"]
+    ax.scatter(ic_off["datetime"], 
+                ic_off["pressure_ion"],
+                label="IC Off", marker="o", color="yellow", s=60, zorder=5)
     
-    # Mark CC unplugged events
+    # CC markers
+    '''cc_turn_off = df[df["CG_state"] == "CG turn off"]
+    ax.scatter(cc_turn_off["datetime"], 
+               cc_turn_off["pressure_conv"],
+               label="CC Turn Off", marker="x", color="red", s=60, zorder=5)'''
     cc_unplugged = df[df["CC_unplugged"]]
-    ax.scatter(cc_unplugged["datetime"], cc_unplugged["pressure_conv"], label="CC Unplugged", marker='x', color='green', s=50)
+    ax.scatter(cc_unplugged["datetime"], 
+               [1e-3] * len(cc_unplugged),
+               label="CC Unplugged", marker="o", color="purple", s=60, zorder=5)
+    cc_off = df[df["CG_state"] == "CG off"]
+    ax.scatter(cc_off["datetime"], 
+               cc_off["pressure_conv"],
+               label="CC Off", marker="o", color="purple", s=60, zorder=5)
     
+    
+
     ax.set_yscale("log")
     ax.set_title("Time Series with Unplugged Events")
     ax.set_xlabel("Time")
     ax.set_ylabel("Pressure (Torr)")
     _format_time_axis(ax)
     ax.legend(bbox_to_anchor=(1.02, 1), loc="upper left")
-    
+
     plt.tight_layout()
     if savepath:
         savepath.parent.mkdir(parents=True, exist_ok=True)
         plt.savefig(savepath, dpi=150, bbox_inches="tight")
     plt.show()
-    
+
+
 
 def scatter_ion_vs_conv_by_IG_CG_state(df: pd.DataFrame, savepath: Path | None = None):
     plt.figure(figsize=(10, 6))
@@ -186,6 +211,38 @@ def plot_anomalies(df: pd.DataFrame, title: str = "Anomaly overlay", savepath: P
     ax.set_title(title)
     _format_time_axis(ax)
     ax.legend(bbox_to_anchor=(1.02, 1), loc="upper left")
+    plt.tight_layout()
+    if savepath:
+        savepath.parent.mkdir(parents=True, exist_ok=True)
+        plt.savefig(savepath, dpi=150, bbox_inches="tight")
+    plt.show()
+
+def plot_tag_anomalies(df: pd.DataFrame, title: str = "Anomalies with Tags", savepath: Path | None = None):
+    fig, ax = plt.subplots(figsize=(12, 5))
+    ax.plot(df["datetime"], df["pressure_conv"], label="Convectron", lw=2)
+    ax.plot(df["datetime"], df["pressure_ion"], label="Ion", lw=2, alpha=0.9)
+    
+    # plot anomaly_ion and anomaly_conv as scatter points
+    mask_ion = df.get("anomaly_if_ion", pd.Series(index=df.index, dtype=int)) == -1
+    mask_conv = df.get("anomaly_if_conv", pd.Series(index=df.index, dtype=int)) == -1
+    ax.scatter(df.loc[mask_ion, "datetime"], df.loc[mask_ion, "pressure_ion"], 
+               label="Anomaly Ion", s=50, color="red", marker="D")
+    ax.scatter(df.loc[mask_conv, "datetime"], df.loc[mask_conv, "pressure_conv"], 
+               label="Anomaly Convectron", s=50, color="blue", marker="o")
+     
+    '''
+        # Add tags as vertical lines
+        for tag in CH_TAGS:
+            tag_mask = df[tag]
+            if tag_mask.any():
+                ax.axvline(x=df.loc[tag_mask, "datetime"].iloc[0], color='orange', linestyle='--', label=f"{tag} event")'''
+
+    ax.set_yscale("log")
+    ax.set_ylabel("Pressure (Torr, log)")
+    ax.set_title(title)
+    _format_time_axis(ax)
+    plt.grid()
+    ax.legend(bbox_to_anchor=(1.02, 1))
     plt.tight_layout()
     if savepath:
         savepath.parent.mkdir(parents=True, exist_ok=True)
