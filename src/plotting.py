@@ -5,29 +5,60 @@ from matplotlib.patches import Patch
 import seaborn as sns
 from pathlib import Path
 import pandas as pd
-from .config import IG_TAGS, CG_TAGS, NUMERIC_COLS
+from .config import IG_TAGS, CG_TAGS, CH_TAGS, NUMERIC_COLS
+def _format_time_axis(ax):
+    locator = mdates.AutoDateLocator(minticks=4, maxticks=8)
+    formatter = mdates.ConciseDateFormatter(locator)
+    ax.xaxis.set_major_locator(locator)
+    ax.xaxis.set_major_formatter(formatter)
 
-def plot_time_with_events(df: pd.DataFrame, savepath: Path):
-    fig, ax = plt.subplots(figsize=(12, 6))
-    df["pressure_ion"].plot(ax=ax, label="Pressure Ion", color="blue")
-    df["pressure_conv"].plot(ax=ax, label="Pressure Conv", color="orange")
+def plot_time_with_events(df: pd.DataFrame, savepath: Path | None = None):
+    plt.figure(figsize=(15,5))
+    plt.plot(df['datetime'], df['pressure_ion'], label='pressure_ion')
+    plt.plot(df['datetime'], df['pressure_conv'], label='pressure_conv')
+    plt.title('Pressure Ion and Convectron Pressure Over Time')
+    plt.yscale("log")
+    plt.xlabel('Datetime')
+    _format_time_axis(plt.gca())
+    plt.xticks(rotation=45)
+    plt.ylabel('Pressure')
+    plt.legend()
+    if savepath:
+        savepath.parent.mkdir(parents=True, exist_ok=True)
+        plt.savefig(savepath, dpi=150, bbox_inches="tight")
     
-    for tag in IG_TAGS + CG_TAGS:
-        if f"tag_{tag.replace(' ', '_')}" in df.columns:
-            events = df[df[f"tag_{tag.replace(' ', '_')}"] == 1]
-            ax.scatter(events.index, events["pressure_ion"], label=tag, marker='x')
-    ax.set_yscale("log")
-    ax.set_title("Time Series with Event Markers")
-    _format_time_axis(ax)
-    ax.set_xlabel("Time")
-    ax.set_ylabel("Pressure (Torr)")
-    ax.legend(bbox_to_anchor=(1.02, 1), loc="upper left")
-    plt.tight_layout()
-    plt.savefig(savepath)
+    plt.show()
     plt.close()
 
 
-def scatter_ion_vs_conv_by_state(df: pd.DataFrame, savepath: Path):
+def plot_time_with_unplugged_events(df: pd.DataFrame, savepath: Path | None = None):
+    fig, ax = plt.subplots(figsize=(12, 6))
+    ax.plot(df["datetime"], df["pressure_ion"], label="Pressure Ion", color="blue")
+    ax.plot(df["datetime"], df["pressure_conv"], label="Pressure Convectron", color="orange")
+    
+    # Mark IC unplugged events
+    ic_unplugged = df[df["IC_unplugged"]]
+    ax.scatter(ic_unplugged["datetime"], ic_unplugged["pressure_ion"], label="IC Unplugged", marker='x', color='red', s=50)
+    
+    # Mark CC unplugged events
+    cc_unplugged = df[df["CC_unplugged"]]
+    ax.scatter(cc_unplugged["datetime"], cc_unplugged["pressure_conv"], label="CC Unplugged", marker='x', color='green', s=50)
+    
+    ax.set_yscale("log")
+    ax.set_title("Time Series with Unplugged Events")
+    ax.set_xlabel("Time")
+    ax.set_ylabel("Pressure (Torr)")
+    _format_time_axis(ax)
+    ax.legend(bbox_to_anchor=(1.02, 1), loc="upper left")
+    
+    plt.tight_layout()
+    if savepath:
+        savepath.parent.mkdir(parents=True, exist_ok=True)
+        plt.savefig(savepath, dpi=150, bbox_inches="tight")
+    plt.show()
+    
+
+def scatter_ion_vs_conv_by_IG_CG_state(df: pd.DataFrame, savepath: Path | None = None):
     plt.figure(figsize=(10, 6))
     sns.scatterplot(data=df, x="pressure_ion", y="pressure_conv", hue="IG_state", style="CG_state", alpha=0.7)
     plt.xscale("log")
@@ -37,17 +68,30 @@ def scatter_ion_vs_conv_by_state(df: pd.DataFrame, savepath: Path):
     plt.ylabel("Pressure Convectron (Torr)")
     plt.legend(title="IG State / CG State")
     plt.tight_layout()
-    plt.savefig(savepath)
+    if savepath:
+        savepath.parent.mkdir(parents=True, exist_ok=True)
+        plt.savefig(savepath, dpi=150, bbox_inches="tight")
+    plt.show()
     plt.close()
 
-
+def scatter_ion_vs_conv_by_CH_state(df: pd.DataFrame, savepath: Path| None = None):
+    plt.figure(figsize=(10, 6))
+    sns.scatterplot(data=df, x="pressure_ion", y="pressure_conv", hue="CH_state", alpha=0.7)
+    plt.xscale("log")
+    plt.yscale("log")
+    plt.title("Pressure Ion vs Convectron by Chamber State")
+    plt.xlabel("Pressure Ion (Torr)")
+    plt.ylabel("Pressure Convectron (Torr)")
+    plt.legend(title="CH State")
+    plt.tight_layout()
+    if savepath:
+        savepath.parent.mkdir(parents=True, exist_ok=True)
+        plt.savefig(savepath, dpi=150, bbox_inches="tight")
+    plt.show()
+    plt.close()
 
 ####
-def _format_time_axis(ax):
-    locator = mdates.AutoDateLocator(minticks=4, maxticks=8)
-    formatter = mdates.ConciseDateFormatter(locator)
-    ax.xaxis.set_major_locator(locator)
-    ax.xaxis.set_major_formatter(formatter)
+
 
 
 def _contiguous_runs(df: pd.DataFrame, state_col: str = "IG_state"):
@@ -103,7 +147,7 @@ def plot_time_with_state_bands(df: pd.DataFrame, title: str, savepath: Path | No
 
 
 
-def plot_time_with_tag_markers(df: pd.DataFrame, tags_to_mark=("IG fail", "IG turn on", "IG slow on"), title: str = "Pressures with tag markers", savepath: Path | None = None):
+def plot_time_with_tag_markers(df: pd.DataFrame, tags_to_mark=CH_TAGS, title: str = "Pressures with tag markers", savepath: Path | None = None):
     fig, ax = plt.subplots(figsize=(12, 5))
     ax.plot(df["datetime"], df["pressure_conv"], label="Convectron", lw=2)
     ax.plot(df["datetime"], df["pressure_ion"], label="Ion", lw=2, alpha=0.9)
