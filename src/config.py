@@ -13,10 +13,11 @@ NUMERIC_COLS = [
 IG_TAGS = ["IG on","IG off","IG fail","IG turn on","IG turn off", "IG slow on"]
 CG_TAGS = ["CG on", "CG off", "CG turn off", "CG turn on"]
 CH_TAGS = ["gate manipulation", "RP on", "chamber open", "venting"]
+OP_tags = ["tag_gate_manipulation", "tag_RP_on", "tag_chamber_open", "tag_venting"]
 
 # === Feature settings ===
-ROLL_WINDOWS = [5, 15]  # in samples (adapt to your sampling cadence)
-SLOPE_WINDOW = 15       # samples for rolling slope (linear trend)
+ROLL_WINDOWS = [3, 7]  # in samples (adapt to your sampling cadence)
+SLOPE_WINDOW = 5       # samples for rolling slope (linear trend)
 
 # === ML settings ===
 # Isolation Forest parameters:
