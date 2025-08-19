@@ -201,41 +201,53 @@ def plot_anomalies(df: pd.DataFrame, title: str = "Anomaly overlay", savepath: P
     ax.plot(df["datetime"], df["pressure_conv"], label="Convectron", lw=2)
     ax.plot(df["datetime"], df["pressure_ion"], label="Ion", lw=2, alpha=0.9)
 
-    # Highlight anomalies (Isolation Forest: -1 is anomaly)
-    mask = df.get("anomaly_if", pd.Series(index=df.index, dtype=int)) == -1
-    ax.scatter(df.loc[mask, "datetime"], df.loc[mask, "pressure_conv"], label="Anomaly (conv)", s=50, color="red", marker="D")
-    ax.scatter(df.loc[mask, "datetime"], df.loc[mask, "pressure_ion"], label="Anomaly (ion)", s=50, color="green", marker="o")
-
+    # Highlight anomalies ion 
+    ion_anomalies = df[df["anomaly_if_ion"] == -1]
+    ax.scatter(ion_anomalies["datetime"], ion_anomalies["pressure_ion"],
+               label="Ion Anomaly", color="green", marker="o", s=50, alpha=0.7)
+    # Highlight anomalies convectron
+    conv_anomalies = df[df["anomaly_if_conv"] == -1]
+    ax.scatter(conv_anomalies["datetime"], conv_anomalies["pressure_conv"],
+               label="Convectron Anomaly", color="red", marker="D", s=50, alpha=0.7)
+    
     ax.set_yscale("log")
     ax.set_ylabel("Pressure (Torr, log)")
     ax.set_title(title)
     _format_time_axis(ax)
     ax.legend(bbox_to_anchor=(1.02, 1), loc="upper left")
+    plt.grid()
     plt.tight_layout()
     if savepath:
         savepath.parent.mkdir(parents=True, exist_ok=True)
         plt.savefig(savepath, dpi=150, bbox_inches="tight")
     plt.show()
 
-def plot_tag_anomalies(df: pd.DataFrame, title: str = "Anomalies with Tags", savepath: Path | None = None):
+
+def plot_tag_anomalies(df: pd.DataFrame, title: str = "Tagged Anomalies", savepath: Path | None = None):
     fig, ax = plt.subplots(figsize=(12, 5))
-    ax.plot(df["datetime"], df["pressure_conv"], label="Convectron", lw=2)
-    ax.plot(df["datetime"], df["pressure_ion"], label="Ion", lw=2, alpha=0.9)
-    
-    # plot anomaly_ion and anomaly_conv as scatter points
-    mask_ion = df.get("anomaly_if_ion", pd.Series(index=df.index, dtype=int)) == -1
-    mask_conv = df.get("anomaly_if_conv", pd.Series(index=df.index, dtype=int)) == -1
-    ax.scatter(df.loc[mask_ion, "datetime"], df.loc[mask_ion, "pressure_ion"], 
-               label="Anomaly Ion", s=50, color="red", marker="D")
-    ax.scatter(df.loc[mask_conv, "datetime"], df.loc[mask_conv, "pressure_conv"], 
-               label="Anomaly Convectron", s=50, color="blue", marker="o")
-     
-    '''
-        # Add tags as vertical lines
-        for tag in CH_TAGS:
-            tag_mask = df[tag]
-            if tag_mask.any():
-                ax.axvline(x=df.loc[tag_mask, "datetime"].iloc[0], color='orange', linestyle='--', label=f"{tag} event")'''
+    ax.plot(df["datetime"], df["pressure_conv"], label="Convectron", lw=2, alpha=0.8)
+    ax.plot(df["datetime"], df["pressure_ion"], label="Ion", lw=2, alpha=0.8)
+
+    # Map anomaly categories to colors/markers
+    anomaly_styles = {
+        "operational": {"color": "green", "marker": "s"},
+        "unexpected": {"color": "red", "marker": "x"},
+        "normal": None,
+    }
+
+    # Plot ion anomalies
+    for category, style in anomaly_styles.items():
+        if style:
+            mask = df["anomaly_ion"] == category
+            ax.scatter(df.loc[mask, "datetime"], df.loc[mask, "pressure_ion"],
+                       label=f"Ion {category}", s=50, **style)
+
+    # Plot convectron anomalies
+    for category, style in anomaly_styles.items():
+        if style:
+            mask = df["anomaly_conv"] == category
+            ax.scatter(df.loc[mask, "datetime"], df.loc[mask, "pressure_conv"],
+                       label=f"Convectron {category}", s=50, **style)
 
     ax.set_yscale("log")
     ax.set_ylabel("Pressure (Torr, log)")
@@ -244,7 +256,9 @@ def plot_tag_anomalies(df: pd.DataFrame, title: str = "Anomalies with Tags", sav
     plt.grid()
     ax.legend(bbox_to_anchor=(1.02, 1))
     plt.tight_layout()
+
     if savepath:
         savepath.parent.mkdir(parents=True, exist_ok=True)
         plt.savefig(savepath, dpi=150, bbox_inches="tight")
+
     plt.show()
