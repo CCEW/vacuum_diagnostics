@@ -37,40 +37,23 @@ def plot_time_with_unplugged_events(df: pd.DataFrame, savepath: Path | None = No
     ax.plot(df["datetime"], df["pressure_ion"], label="Ion")
 
     # IC markers
-    
-    '''ic_turn_off = df[df["IG_state"] == "IG turn off"]
-    ax.scatter(ic_turn_off["datetime"], 
-               ic_turn_off["pressure_ion"],
-               label="IC Turn Off", marker="x", color="red", s=60, zorder=5)'''
     ic_unplugged = df[df["IC_unplugged"]]
     ax.scatter(ic_unplugged["datetime"], 
                [1e-7] * len(ic_unplugged),
-               label="IC Unplugged", marker="o", color="yellow", s=60, zorder=5)
-    '''ic_off = df[df["IG_state"] == "IG off"]
-    ax.scatter(ic_off["datetime"], 
-                ic_off["pressure_ion"],
-                label="IC Off", marker="o", color="yellow", s=60, zorder=5)'''
+               label="IC Unplugged", marker="o", color="red", s=60, zorder=5)
     
     # CC markers
-    '''cc_turn_off = df[df["CG_state"] == "CG turn off"]
-    ax.scatter(cc_turn_off["datetime"], 
-               cc_turn_off["pressure_conv"],
-               label="CC Turn Off", marker="x", color="red", s=60, zorder=5)'''
     cc_unplugged = df[df["CC_unplugged"]]
     ax.scatter(cc_unplugged["datetime"], 
                [1e-3] * len(cc_unplugged),
                label="CC Unplugged", marker="o", color="purple", s=60, zorder=5)
-    '''cc_off = df[df["CG_state"] == "CG off"]
-    ax.scatter(cc_off["datetime"], 
-               cc_off["pressure_conv"],
-               label="CC Off", marker="o", color="purple", s=60, zorder=5)'''
     
     
 
     ax.set_yscale("log")
     ax.set_title("Time Series with Unplugged Events")
-    ax.set_xlabel("Datetime")
-    ax.set_ylabel("Pressure (Torr)")
+    ax.set_xlabel("Datetime", fontsize=16)
+    ax.set_ylabel("Pressure (Torr, log)", fontsize=16)
     _format_time_axis(ax)
     ax.legend(loc="upper right")
     plt.grid(True, which='both', linestyle='--', linewidth=0.5)
@@ -179,8 +162,8 @@ def plot_anomalies(df: pd.DataFrame, title: str = "Anomaly overlay", savepath: P
                label="Convectron Anomaly", color="red", marker="D", s=50, alpha=0.7)
     
     ax.set_yscale("log")
-    ax.set_ylabel("Pressure (Torr, log)")
-    ax.set_xlabel("Datetime")
+    ax.set_ylabel("Pressure (Torr, log)", fontsize=16)
+    ax.set_xlabel("Datetime", fontsize=16)
     ax.set_title(title)
     _format_time_axis(ax)
     plt.grid(True, which='both', linestyle='--', linewidth=0.5)
@@ -219,8 +202,8 @@ def plot_tag_anomalies(df: pd.DataFrame, title: str = "Tagged Anomalies", savepa
                        label=f"Convectron {category}", s=50, **style)
 
     ax.set_yscale("log")
-    ax.set_ylabel("Pressure (Torr, log)")
-    ax.set_xlabel("Datetime")
+    ax.set_ylabel("Pressure (Torr, log)", fontsize=16)
+    ax.set_xlabel("Datetime", fontsize=16)
     ax.set_title(title)
     _format_time_axis(ax)
     plt.grid()
