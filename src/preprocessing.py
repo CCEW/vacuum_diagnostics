@@ -33,7 +33,7 @@ def basic_clean(df: pd.DataFrame) -> pd.DataFrame:
 def _rolling_features(s: pd.Series, name: str, windows: list[int]) -> pd.DataFrame:
     out = {}
     for w in windows:
-        roll = s.rolling(window=w, min_periods=max(2, w//2))
+        roll = s.rolling(window=w, min_periods=1)
         out[f"roll{w}_mean_{name}"] = roll.mean()
         out[f"roll{w}_std_{name}"] = roll.std(ddof=0)
         out[f"roll{w}_min_{name}"] = roll.min()

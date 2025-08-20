@@ -15,7 +15,9 @@ CG_TAGS = ["CG on", "CG off", "CG turn off", "CG turn on"]
 CH_TAGS = ["gate manipulation", "RP on", "chamber open", "venting"]
 OP_tags = ["tag_gate_manipulation", "tag_RP_on", "tag_chamber_open", "tag_venting"]
 
-ROLL_WINDOWS = [3, 5]  # in samples (adapt to your sampling cadence)
+ION_THRESHOLD = 1e-7  # Threshold for ion pressure to classify as unexpected
+CONV_THRESHOLD = 1e-3  # Threshold for convectron pressure to classify
+ROLL_WINDOWS = [3, 15]  # in samples (adapt to your sampling cadence)
 SLOPE_WINDOW = 5       # samples for rolling slope (linear trend)
 
 IF_RANDOM_STATE = 42
@@ -27,7 +29,7 @@ FEATURE_COLUMNS = [
     "delta_ion", "delta_conv",
     "log_pressure_ion", "log_pressure_conv",
     "delta_log_ion", "delta_log_conv",
-    "roll5_mean_ion", "roll5_std_ion", "roll15_mean_ion", "roll15_std_ion",
-    "roll5_mean_conv", "roll5_std_conv", "roll15_mean_conv", "roll15_std_conv",
-    "slope_ion", "slope_conv",
+    "roll3_mean_ion", "roll3_std_ion", "roll15_mean_ion", "roll15_std_ion",
+    "roll3_mean_conv", "roll3_std_conv", "roll15_mean_conv", "roll15_std_conv",
+    "slope_ion", "slope_conv", "tag_IG_fail", "tag_gate_manipulation", "tag_RP_on", "tag_chamber_open", "tag_venting"
 ]

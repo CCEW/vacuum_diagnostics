@@ -21,10 +21,9 @@ def plot_time_with_events(df: pd.DataFrame, savepath: Path | None = None):
     ax.set_title("Ion and Convectron Pressure Over Time")
     _format_time_axis(ax)
     ax.set_xlabel("Datetime")
-    # legend over graph
-    ax.legend(loc="upper left")
-    
+    ax.legend(loc="upper right")
     plt.grid(True, which='both', linestyle='--', linewidth=0.5)
+    plt.tight_layout()
     if savepath:
         savepath.parent.mkdir(parents=True, exist_ok=True)
         plt.savefig(savepath, dpi=150, bbox_inches="tight")
@@ -47,10 +46,10 @@ def plot_time_with_unplugged_events(df: pd.DataFrame, savepath: Path | None = No
     ax.scatter(ic_unplugged["datetime"], 
                [1e-7] * len(ic_unplugged),
                label="IC Unplugged", marker="o", color="yellow", s=60, zorder=5)
-    ic_off = df[df["IG_state"] == "IG off"]
+    '''ic_off = df[df["IG_state"] == "IG off"]
     ax.scatter(ic_off["datetime"], 
                 ic_off["pressure_ion"],
-                label="IC Off", marker="o", color="yellow", s=60, zorder=5)
+                label="IC Off", marker="o", color="yellow", s=60, zorder=5)'''
     
     # CC markers
     '''cc_turn_off = df[df["CG_state"] == "CG turn off"]
@@ -61,61 +60,26 @@ def plot_time_with_unplugged_events(df: pd.DataFrame, savepath: Path | None = No
     ax.scatter(cc_unplugged["datetime"], 
                [1e-3] * len(cc_unplugged),
                label="CC Unplugged", marker="o", color="purple", s=60, zorder=5)
-    cc_off = df[df["CG_state"] == "CG off"]
+    '''cc_off = df[df["CG_state"] == "CG off"]
     ax.scatter(cc_off["datetime"], 
                cc_off["pressure_conv"],
-               label="CC Off", marker="o", color="purple", s=60, zorder=5)
+               label="CC Off", marker="o", color="purple", s=60, zorder=5)'''
     
     
 
     ax.set_yscale("log")
     ax.set_title("Time Series with Unplugged Events")
-    ax.set_xlabel("Time")
+    ax.set_xlabel("Datetime")
     ax.set_ylabel("Pressure (Torr)")
     _format_time_axis(ax)
-    ax.legend(bbox_to_anchor=(1.02, 1), loc="upper left")
-
+    ax.legend(loc="upper right")
+    plt.grid(True, which='both', linestyle='--', linewidth=0.5)
     plt.tight_layout()
     if savepath:
         savepath.parent.mkdir(parents=True, exist_ok=True)
         plt.savefig(savepath, dpi=150, bbox_inches="tight")
     plt.show()
 
-
-
-def scatter_ion_vs_conv_by_IG_CG_state(df: pd.DataFrame, savepath: Path | None = None):
-    plt.figure(figsize=(10, 6))
-    sns.scatterplot(data=df, x="pressure_ion", y="pressure_conv", hue="IG_state", style="CG_state", alpha=0.7)
-    plt.xscale("log")
-    plt.yscale("log")
-    plt.title("Pressure Ion vs Convectron by State")
-    plt.xlabel("Pressure Ion (Torr)")
-    plt.ylabel("Pressure Convectron (Torr)")
-    plt.legend(title="IG State / CG State")
-    plt.tight_layout()
-    if savepath:
-        savepath.parent.mkdir(parents=True, exist_ok=True)
-        plt.savefig(savepath, dpi=150, bbox_inches="tight")
-    plt.show()
-    plt.close()
-
-def scatter_ion_vs_conv_by_CH_state(df: pd.DataFrame, savepath: Path| None = None):
-    plt.figure(figsize=(10, 6))
-    sns.scatterplot(data=df, x="pressure_ion", y="pressure_conv", hue="CH_state", alpha=0.7)
-    plt.xscale("log")
-    plt.yscale("log")
-    plt.title("Pressure Ion vs Convectron by Chamber State")
-    plt.xlabel("Pressure Ion (Torr)")
-    plt.ylabel("Pressure Convectron (Torr)")
-    plt.legend(title="CH State")
-    plt.tight_layout()
-    if savepath:
-        savepath.parent.mkdir(parents=True, exist_ok=True)
-        plt.savefig(savepath, dpi=150, bbox_inches="tight")
-    plt.show()
-    plt.close()
-
-####
 
 
 
@@ -155,16 +119,17 @@ def plot_time_with_state_bands(df: pd.DataFrame, title: str, savepath: Path | No
 
     ax.set_yscale("log")
     ax.set_ylabel("Pressure (Torr, log)")
+    ax.set_xlabel("Datetime")
     ax.set_title(title)
     _format_time_axis(ax)
 
     # Legends
     ax.legend(loc="upper right")
     patches = [Patch(facecolor=c, alpha=0.25, label=s) for s, c in state_colors.items()]
-    leg2 = ax.legend(handles=patches, title="IG_state", loc="center left", bbox_to_anchor=(1.02, 0.5))
-    ax.add_artist(leg2)
-
-    plt.tight_layout()
+    ax.legend(handles=patches, title="IG_state", loc="upper right")
+    
+    plt.grid(True, which='both', linestyle='--', linewidth=0.5)
+    
     if savepath:
         savepath.parent.mkdir(parents=True, exist_ok=True)
         plt.savefig(savepath, dpi=150, bbox_inches="tight")
@@ -187,10 +152,13 @@ def plot_time_with_tag_markers(df: pd.DataFrame, tags_to_mark=CH_TAGS, title: st
 
     ax.set_yscale("log")
     ax.set_ylabel("Pressure (Torr, log)")
+    ax.set_xlabel("Datetime")
     ax.set_title(title)
     _format_time_axis(ax)
-    ax.legend(bbox_to_anchor=(1.02, 1), loc="upper left")
+    plt.grid(True, which='both', linestyle='--', linewidth=0.5)
+    ax.legend(loc="upper right")
     plt.tight_layout()
+    
     if savepath:
         savepath.parent.mkdir(parents=True, exist_ok=True)
         plt.savefig(savepath, dpi=150, bbox_inches="tight")
@@ -212,10 +180,11 @@ def plot_anomalies(df: pd.DataFrame, title: str = "Anomaly overlay", savepath: P
     
     ax.set_yscale("log")
     ax.set_ylabel("Pressure (Torr, log)")
+    ax.set_xlabel("Datetime")
     ax.set_title(title)
     _format_time_axis(ax)
-    ax.legend(bbox_to_anchor=(1.02, 1), loc="upper left")
-    plt.grid()
+    plt.grid(True, which='both', linestyle='--', linewidth=0.5)
+    ax.legend(loc="upper right")
     plt.tight_layout()
     if savepath:
         savepath.parent.mkdir(parents=True, exist_ok=True)
@@ -251,12 +220,12 @@ def plot_tag_anomalies(df: pd.DataFrame, title: str = "Tagged Anomalies", savepa
 
     ax.set_yscale("log")
     ax.set_ylabel("Pressure (Torr, log)")
+    ax.set_xlabel("Datetime")
     ax.set_title(title)
     _format_time_axis(ax)
     plt.grid()
-    ax.legend(bbox_to_anchor=(1.02, 1))
-    plt.tight_layout()
-
+    ax.legend(loc="upper right")
+    
     if savepath:
         savepath.parent.mkdir(parents=True, exist_ok=True)
         plt.savefig(savepath, dpi=150, bbox_inches="tight")

@@ -2,7 +2,7 @@
 import pandas as pd
 import numpy as np
 from sklearn.ensemble import IsolationForest
-from .config import IF_RANDOM_STATE, IF_CONTAMINATION, FEATURE_COLUMNS, OP_tags
+from .config import IF_RANDOM_STATE, IF_CONTAMINATION, FEATURE_COLUMNS, OP_tags, CONV_THRESHOLD, ION_THRESHOLD
 
 
 def detect_anomalies(df: pd.DataFrame) -> pd.DataFrame:
@@ -64,14 +64,14 @@ def tag_anomalies(df: pd.DataFrame) -> pd.DataFrame:
     def classify_ion(row):
         if row["anomaly_if_ion"] == -1 and row["has_op_tag"]:
             return "operational"
-        elif row["anomaly_if_ion"] == -1 and not row["has_op_tag"]:
+        elif row["anomaly_if_ion"] == -1 and not row["has_op_tag"] and row["pressure_ion"] > ION_THRESHOLD:
             return "unexpected"
         else:
             return "normal"
 
     # Classify convectron anomalies
     def classify_conv(row):
-        if row["anomaly_if_conv"] == -1 and not row["has_op_tag"]:
+        if row["anomaly_if_conv"] == -1 and not row["has_op_tag"] and row["pressure_conv"] > CONV_THRESHOLD:
             return "unexpected"
         elif row["anomaly_if_conv"] == -1 and row["has_op_tag"]:
             return "operational"
